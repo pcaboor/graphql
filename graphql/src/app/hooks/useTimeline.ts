@@ -1,26 +1,26 @@
 import { useState, useEffect } from "react";
-import { TotalXPInfo } from "@/app/types/types";
-import { getTotalXPData } from "@/lib/totalXP";
+import { TimeLine } from "@/app/types/types";
+import { getTimelineData } from "@/lib/timeline";
 
-function useXP(selectedEventId?: string | number) {
-    const [totalXPInfo, setTotalXPInfo] = useState<TotalXPInfo | null>(null);
+function useTimeline(selectedEventId?: string | number) {
+    const [timeline, setTimeline] = useState<TimeLine | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         if (!selectedEventId) {
-            setTotalXPInfo(null);
+            setTimeline(null);
             return;
         }
-        const fetchXPData = async () => {
+        const fetchTimelineData = async () => {
             try {
                 setLoading(true);
                 setError(null);
 
-                const totalXP = await getTotalXPData(Number(selectedEventId));
+                const timelinePerEvent = await getTimelineData(Number(selectedEventId));
 
-                if (totalXP) {
-                    setTotalXPInfo(totalXP);
+                if (timelinePerEvent) {
+                    setTimeline(timelinePerEvent);
                 } else {
                     setError("No XP data found.");
                 }
@@ -32,9 +32,9 @@ function useXP(selectedEventId?: string | number) {
             }
         };
 
-        fetchXPData();
+        fetchTimelineData();
     }, [selectedEventId]);
-    return { totalXPInfo, error, loading };
+    return { timeline, error, loading };
 }
 
-export { useXP };
+export { useTimeline };

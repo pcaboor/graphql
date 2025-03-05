@@ -71,3 +71,64 @@ export interface TotalXPInfo {
         }
     }
 }
+export interface TimeLine {
+    group: {
+        updatedAt: string;
+        captainLogin: string;
+        captainId: string;
+        event: {
+            object: {
+                attrs: {
+                    timeline: string;
+                };
+            };
+        };
+    }[];
+}
+
+
+export interface Grade {
+    user: {
+        progressesByPath: {
+            succeeded: boolean,
+            objectId: string,
+            bestProgress: {
+                isDone: boolean,
+                object: {
+                    name: string,
+                    type: string
+                }
+            }
+        }[]
+    }
+}
+
+export interface Audit {
+    private: {
+        code: string;
+    };
+    grade: number | null;
+    resultId: string;
+    group: {
+        captainLogin: string;
+        createdAt: string;
+        object: {
+            name: string;
+            type: string;
+        };
+    };
+}
+
+export interface AllXP {
+    amount: number;
+    isBonus: boolean;
+    attrs: {
+        group: number
+    };
+    eventId: string;
+    createdAt: string;
+    object: {
+        name: string;
+        type: string;
+    };
+}

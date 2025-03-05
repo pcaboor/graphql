@@ -36,10 +36,9 @@ export function LoginForm({
             setError("Please fill out all fields")
             return
         }
-
         try {
             await signIn(identifier, password)
-            router.push("/dashboard");
+            router.push("/");
         } catch (error) {
             setError((error as Error).message)
         } finally {

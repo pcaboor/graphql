@@ -23,7 +23,7 @@ function Header1() {
         e.preventDefault();
         try {
             await logOut();
-            router.push("/dashboard");
+            router.push("/login");
         } catch (error) {
             console.log(error);
         }

@@ -10,8 +10,14 @@ import { ArrowDown, ArrowUp } from "lucide-react";
 import { Button } from "./ui/button";
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "./ui/drawer";
 import { Progress } from "./ui/progress";
-import { SkillChart } from "./skillChart";
 import { useXP } from "@/app/hooks/useXP";
+//import { useTimeline } from "@/app/hooks/useTimeline";
+import { useLevel } from "@/app/hooks/useLevel";
+import Link from "next/link";
+import { useAllXP } from "@/app/hooks/useAllXP";
+import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from "./ui/table";
+import VerticalBarChart from "./chart";
+import XPLineChart from "./graph";
 
 interface TabContent {
     badge: string;
@@ -40,11 +46,12 @@ const Feature108 = ({
 
 }: Feature108Props) => {
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-    const { totalXPInfo } = useXP();
     const [cursusInfo, setCursusInfo] = useState<CursusInfo | null>(null);
     const [error, setError] = useState<string | null>(null);
-
-    console.log(totalXPInfo?.transaction_aggregate?.aggregate.sum?.amount)
+    const [selectedEventId, setSelectedEventId] = useState<string | undefined>();
+    const { totalXPInfo } = useXP(selectedEventId);
+    const { level } = useLevel(selectedEventId)
+    const { allXP } = useAllXP(selectedEventId);
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -57,7 +64,9 @@ const Feature108 = ({
                 setUserInfo(userData);
                 setCursusInfo(cursusData);
 
-
+                if (cursusData?.events && cursusData.events.length > 0) {
+                    setSelectedEventId(String(cursusData.events[0].event.id));
+                }
 
             } catch (err) {
                 setError((err as Error).message);
@@ -67,6 +76,19 @@ const Feature108 = ({
         fetchAllData();
     }, []);
 
+    function formatXP(amount: number): string {
+        if (amount > 1000000) {
+            // Convertir le montant en chaîne de caractères et insérer un point après le premier chiffre
+            const amountStr = amount.toString();
+            // Ici on prend le premier chiffre, ajoute un point, puis on prend les deux chiffres suivants
+            return `${amountStr.slice(0, 1)}.${amountStr.slice(1, 3)} MB`;
+        } else {
+            const amountStr = amount.toString();
+            return `${amountStr.slice(0, 3)} KB`;
+        }
+    }
+
+
     if (error) {
         return <div className="text-center">{error}</div>;
     }
@@ -75,8 +97,13 @@ const Feature108 = ({
         return <div className="text-center">Chargement des données...</div>;
     }
 
+    // PROCESS VAR
     const ratio = userInfo.totalDown && userInfo.totalUp ? parseFloat((userInfo.totalUp / userInfo.totalDown).toFixed(1)) : null;
+    // const xp = totalXPInfo?.transaction_aggregate?.aggregate?.sum?.amount;
+    // const userXp = xp ? Number(xp.toString().slice(0, 3)) : "Loading...";
 
+    const demoProjectXP = allXP?.slice(0, 8)
+    const today = new Date();
 
     return (
         <section>
@@ -88,7 +115,7 @@ const Feature108 = ({
                     </h1>
                     <Drawer>
                         <DrawerTrigger asChild>
-                            <svg type="submit" role="img" width="40px" viewBox="0 0 24 28" aria-label="icon"><g fill="none" stroke="#e8e1f0" stroke-width="0.6px"><path d="M 21.0826 20.965 M 9.9138 13.9199 C 13.4755 13.9199 16.3621 11.0281 16.3621 7.46 C 16.3621 3.8918 13.4755 1 9.9138 1 C 6.3521 1 3.4655 3.8918 3.4655 7.46 C 3.4655 11.0281 6.3521 13.9199 9.9138 13.9199 Z M 9.9138 13.9199 C 11.7933 13.9199 13.1379 13.1599 13.1379 13.1599 C 14.2228 13.5228 15.2298 14.1726 16.1003 15.0314 C 13.3731 15.4646 11.2869 17.8301 11.2869 20.6857 C 11.2869 21.3792 11.4102 22.0442 11.6359 22.6598 H 1 C 1 18.2899 3.4655 14.4899 6.8793 13.1599 C 6.8793 13.1599 7.784 13.9199 9.9138 13.9199 Z M 17.9741 15.9301 C 20.7507 15.9301 23 18.1835 23 20.965 C 23 23.7466 20.7507 26 17.9741 26 C 15.1976 26 12.9483 23.7466 12.9483 20.965 C 12.9483 18.1835 15.1976 15.9301 17.9741 15.9301 Z"></path><path d="M 16.311 21.7208 L 17.628 22.8947 M 17.6441 22.8767 L 16.0186 24.1712 C 16.0105 24.1784 16.0007 24.1824 15.9908 24.1822 C 15.9808 24.1822 15.971 24.1783 15.9628 24.171 C 15.9546 24.1638 15.9484 24.1535 15.9449 24.1417 C 15.9415 24.1297 15.941 24.1167 15.9434 24.1044 L 16.3359 21.7112 L 18.5701 17.6531 C 18.59 17.617 18.6202 17.5925 18.6543 17.5848 C 18.6885 17.5771 18.7236 17.587 18.752 17.6123 L 19.8462 18.5874 C 19.8746 18.6128 19.8938 18.6514 19.8997 18.6948 C 19.9058 18.7382 19.898 18.7829 19.8782 18.8191 L 17.644 22.8767 Z"></path></g></svg>
+                            <svg type="submit" role="img" width="40px" viewBox="0 0 24 28" aria-label="icon"><g fill="none" stroke="#e8e1f0" strokeWidth="0.6px"><path d="M 21.0826 20.965 M 9.9138 13.9199 C 13.4755 13.9199 16.3621 11.0281 16.3621 7.46 C 16.3621 3.8918 13.4755 1 9.9138 1 C 6.3521 1 3.4655 3.8918 3.4655 7.46 C 3.4655 11.0281 6.3521 13.9199 9.9138 13.9199 Z M 9.9138 13.9199 C 11.7933 13.9199 13.1379 13.1599 13.1379 13.1599 C 14.2228 13.5228 15.2298 14.1726 16.1003 15.0314 C 13.3731 15.4646 11.2869 17.8301 11.2869 20.6857 C 11.2869 21.3792 11.4102 22.0442 11.6359 22.6598 H 1 C 1 18.2899 3.4655 14.4899 6.8793 13.1599 C 6.8793 13.1599 7.784 13.9199 9.9138 13.9199 Z M 17.9741 15.9301 C 20.7507 15.9301 23 18.1835 23 20.965 C 23 23.7466 20.7507 26 17.9741 26 C 15.1976 26 12.9483 23.7466 12.9483 20.965 C 12.9483 18.1835 15.1976 15.9301 17.9741 15.9301 Z"></path><path d="M 16.311 21.7208 L 17.628 22.8947 M 17.6441 22.8767 L 16.0186 24.1712 C 16.0105 24.1784 16.0007 24.1824 15.9908 24.1822 C 15.9808 24.1822 15.971 24.1783 15.9628 24.171 C 15.9546 24.1638 15.9484 24.1535 15.9449 24.1417 C 15.9415 24.1297 15.941 24.1167 15.9434 24.1044 L 16.3359 21.7112 L 18.5701 17.6531 C 18.59 17.617 18.6202 17.5925 18.6543 17.5848 C 18.6885 17.5771 18.7236 17.587 18.752 17.6123 L 19.8462 18.5874 C 19.8746 18.6128 19.8938 18.6514 19.8997 18.6948 C 19.9058 18.7382 19.898 18.7829 19.8782 18.8191 L 17.644 22.8767 Z"></path></g></svg>
                         </DrawerTrigger>
                         <DrawerContent>
                             <div className="mx-auto w-full max-w-3xl min-h-screen">
@@ -185,7 +212,7 @@ const Feature108 = ({
 
                 {/* Composant Tabs  defaultValue={0} */}
                 <Tabs className="mt-8">
-                    <Tabs defaultValue={cursusInfo?.events?.[0]?.event?.id ? String(cursusInfo.events[0].event.id) : undefined} className="mt-8">
+                    <Tabs defaultValue={selectedEventId} onValueChange={setSelectedEventId} className="mt-8">
                         <TabsList className="container flex flex-col items-center sm:flex-row">
                             {cursusInfo?.events?.map(e => (
                                 <TabsTrigger
@@ -198,26 +225,27 @@ const Feature108 = ({
                             ))}
                         </TabsList>
                     </Tabs>
-
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-4">
+                        <div className="bg-white h-full lg:col-span-1 p-6 aspect-square items-center justify-center lg:aspect-auto flex gap-2">
+                            <div className="flex flex-col items-center text-black">
+                                <div className="text-lg mb-4">Current level</div>
+                                <div className="w-40 h-40 shadow-2xl rounded-full text-4xl flex items-center justify-center">
+                                    Lvl {level}
+                                </div>
 
-                        <div className="bg-muted  h-full lg:col-span-1 p-6 aspect-square lg:aspect-auto flex gap-2 ">
-                            <p className=" max-w-xs text-base ">
-                                {totalXPInfo?.transaction_aggregate?.aggregate?.sum?.amount ? totalXPInfo.transaction_aggregate.aggregate?.sum.amount.toString() : "Loading..."}
-                            </p>
-                            <span>{totalXPInfo?.transaction_aggregate?.aggregate?.sum?.amount && totalXPInfo.transaction_aggregate.aggregate?.sum.amount > 1000000 ? "MB" : "KB"}
-                            </span>
-
+                            </div>
                         </div>
+
                         <div className="bg-muted  h-full lg:col-span-1 p-6 aspect-square lg:aspect-auto flex justify-between">
                             <div className="flex flex-col">
                                 <h3 className="text-xl tracking-tight"></h3>
                                 <p className="text-[#caadff] max-w-xs text-6xl">
                                     What&apos;s UP
                                 </p>
+                                <Link href={"/audits"} className="text-lg text-green-300">Audits history -{">"}</Link>
                             </div>
                         </div>
-                        <div className="bg-muted   aspect-square p-6">
+                        <div className="bg-muted  aspect-square p-6">
                             <div className="flex flex-col">
                                 <h3 className="text-xl tracking-tight mb-2">Audits ratio</h3>
 
@@ -233,9 +261,7 @@ const Feature108 = ({
                                         <span>{userInfo.totalUp} {userInfo && userInfo.totalUp > 1000000 ? "MB" : "KB"}</span>
                                         <ArrowUp className="h-5" />
                                     </div>
-
                                 </div>
-
                                 {/* Received section */}
                                 <div className="flex flex-col gap-2 mb-3 text-sm text-muted-foreground">
                                     <span>Received:</span>
@@ -243,14 +269,11 @@ const Feature108 = ({
                                         <Progress
                                             value={100}
                                             className={`h-1.5 rounded-none ${ratio && ratio < 1 ? "bg-[#ffa482]" : "text-green-500"}`}
-
                                         />
                                         <span>{userInfo.totalDown} {userInfo && userInfo.totalDown > 1000000 ? "MB" : "KB"}</span>
                                         <ArrowDown className="h-5 " />
                                     </div>
-
                                 </div>
-
                                 {/* Final ratio and call to action */}
                                 <div className="flex items-end justify-between gap-4 mt-4">
                                     <div className={`text-6xl ${ratio && ratio < 1 ? "text-[#ffa482]" : "text-green-500"} `}>
@@ -262,16 +285,46 @@ const Feature108 = ({
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-muted   aspect-square p-6 flex justify-between flex-col">
-                            <SkillChart />
+                        <div className="bg-muted  h-full lg:col-span-2 p-6 aspect-square lg:aspect-auto flex gap-2 flex-col items-start">
+                            <div className="flex gap-3 items-center">
+                                <span className="text-7xl text-[#caadff]">
+                                    {totalXPInfo?.transaction_aggregate?.aggregate?.sum?.amount
+                                        ? formatXP(totalXPInfo.transaction_aggregate.aggregate.sum.amount)
+                                        : "Loading..."}
+                                </span>
+                                <Link href={"/history"} className="text-lg ml-4 text-[#caadff]">Projet history -{">"}</Link>
+                            </div>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-[200px]">Captain project</TableHead>
+                                        <TableHead>Gain</TableHead>
+                                        <TableHead className=" w-[200px]">Type</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody >
+                                    {demoProjectXP?.map((xp, index) => (
+                                        <TableRow key={index}>
+                                            <TableCell className={xp.isBonus ? 'text-green-500' : ''}> {xp.object.name}</TableCell>
+                                            <TableCell className="font-medium"> {(xp.amount).toFixed(1)} {xp.amount > 1000000 ? "MB" : "KB"}
+                                            </TableCell>
+                                            <TableCell> {xp.object.type}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
                         </div>
-                        <div className="bg-muted   h-full lg:col-span-2 p-6 aspect-square lg:aspect-auto flex gap-2">
-                            <p className=" max-w-xs text-7xl text-[#caadff]">
-                                {totalXPInfo?.transaction_aggregate?.aggregate?.sum?.amount ? totalXPInfo.transaction_aggregate.aggregate?.sum.amount.toString() : "Loading..."}
-                            </p>
-                            <span className="text-7xl text-neutral-500">{totalXPInfo?.transaction_aggregate?.aggregate?.sum?.amount && totalXPInfo.transaction_aggregate.aggregate?.sum.amount > 1000000 ? "MB" : "KB"}
-                            </span>
+                        <div className="bg-white text-[#b795ff] p-6 text-6xl shadow-2xl">
+                            {today.toDateString()}
                         </div>
+                        <div className="bg-muted  h-full lg:col-span-2 p-6 aspect-square lg:aspect-auto flex gap-2 flex-col items-start">
+                            <XPLineChart xpData={allXP} />
+                        </div>
+                        <div className="bg-muted   p-6">
+                            <VerticalBarChart xpData={allXP} />
+
+                        </div>
+
                     </div>
                 </Tabs>
             </div>

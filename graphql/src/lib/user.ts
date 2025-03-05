@@ -17,6 +17,7 @@ async function getUserData(): Promise<UserInfo | null> {
       `;
   try {
     const data = await fetchData(userData);
+    console.log(data)
     return data.user[0] || null; // Recupérer depuis user le 0 
   } catch (error) {
     console.error("Erreur lors de la récupération des données utilisateur:", error);

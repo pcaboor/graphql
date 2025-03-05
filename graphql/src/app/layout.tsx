@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "./provider/theme-provider";
-import { NavBar } from "@/components/navBar";
 
 const IBMsans = IBM_Plex_Mono({
   subsets: ["latin"],
@@ -31,8 +30,6 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-
-          <NavBar />
           {children}
         </ThemeProvider>
       </body>

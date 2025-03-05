@@ -11,6 +11,7 @@ function useUser() {
         const fetchAllData = async () => {
             try {
                 const userData = await getUserData();
+                console.log(userData)
                 // Mise à jour des états
                 setUserInfo(userData);
 

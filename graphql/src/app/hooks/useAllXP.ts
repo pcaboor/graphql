@@ -1,26 +1,26 @@
 import { useState, useEffect } from "react";
-import { TotalXPInfo } from "@/app/types/types";
-import { getTotalXPData } from "@/lib/totalXP";
+import { AllXP } from "../types/types";
+import { getAlltransactionData } from "@/lib/allXp";
 
-function useXP(selectedEventId?: string | number) {
-    const [totalXPInfo, setTotalXPInfo] = useState<TotalXPInfo | null>(null);
+function useAllXP(selectedEventId?: string | number) {
+    const [allXP, setAllXP] = useState<AllXP[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
+
     useEffect(() => {
         if (!selectedEventId) {
-            setTotalXPInfo(null);
+            setAllXP(null);
             return;
         }
-        const fetchXPData = async () => {
+        const fetchTimelineData = async () => {
             try {
                 setLoading(true);
                 setError(null);
-
-                const totalXP = await getTotalXPData(Number(selectedEventId));
-
-                if (totalXP) {
-                    setTotalXPInfo(totalXP);
+                const allXPDaTa = await getAlltransactionData(Number(selectedEventId));
+                console.log("***ALL XP*****", allXPDaTa)
+                if (allXPDaTa !== null) {
+                    setAllXP(allXPDaTa);
                 } else {
                     setError("No XP data found.");
                 }
@@ -32,9 +32,9 @@ function useXP(selectedEventId?: string | number) {
             }
         };
 
-        fetchXPData();
+        fetchTimelineData();
     }, [selectedEventId]);
-    return { totalXPInfo, error, loading };
+    return { allXP, error, loading };
 }
 
-export { useXP };
+export { useAllXP };
